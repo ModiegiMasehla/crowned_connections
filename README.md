@@ -1,4 +1,4 @@
- Crown Connections 👑
+ Crowned Connections 👑
 
 A Flutter + Firebase mobile app that works like a mini Booking.com for
 salons: clients search for salons near them by service type, view working
