@@ -38,6 +38,7 @@ lib/
 
 ### How the data fits together (Firestore)
 
+
 ```
 users/{uid}                -> name, email, role ("client" | "owner"), phone
 salons/{salonId}           -> ownerId, name, address, lat, lng,
