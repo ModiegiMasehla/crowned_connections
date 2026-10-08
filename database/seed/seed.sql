@@ -125,4 +125,4 @@ SELECT s.id,sv.id,
 FROM salon_profiles s CROSS JOIN services sv
 ON CONFLICT(salon_id,service_id) DO NOTHING;
 
-
+--INSERT INTO seed_marker(id) VALUES(1) ON CONFLICT(id) DO NOTHING;
