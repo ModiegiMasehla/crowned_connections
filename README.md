@@ -1,4 +1,7 @@
+WTC-FY8EXSCD-Verification code
+
 # Crowned Connections Phase 1
+
 
 Crowned Connections is a South African salon/beauty marketplace MVP. V1 deliberately focuses on:
 
