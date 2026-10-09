@@ -1,3 +1,4 @@
+Verification code: WTC-FY8EXSCD
 # Crowned Connections V1
 
 Crowned Connections is a South African salon/beauty marketplace MVP. V1 deliberately focuses on:
