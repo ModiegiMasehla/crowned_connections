@@ -1,7 +1,4 @@
-WTC-FY8EXSCD-Verification code
-
-# Crowned Connections Phase 1
-
+# Crowned Connections V1
 
 Crowned Connections is a South African salon/beauty marketplace MVP. V1 deliberately focuses on:
 
@@ -14,8 +11,7 @@ Crowned Connections is a South African salon/beauty marketplace MVP. V1 delibera
 7. Salon-owner booking acceptance/decline
 8. Tests and Docker
 
-Messaging, reviews, push notifications, analytics and the admin web panel are **later phases**. 
-Payment fields are already present in the schema so adding payments later does not require a destructive migration.
+Messaging, reviews, push notifications, analytics and the admin web panel are **later phases**. Payment fields are already present in the schema so adding payments later does not require a destructive migration.
 
 ## Architecture
 
@@ -24,7 +20,7 @@ Flutter mobile app
        |
        | REST/JSON
        v
-Node.js + TypeScript + Express
+Java 17 + Spring Boot REST API
        |
        v
 PostgreSQL + PostGIS
@@ -35,13 +31,12 @@ PostgreSQL + PostGIS
 
 All appointment timestamps are stored as `timestamptz`/UTC. The Flutter UI renders appointment times in `Africa/Johannesburg`.
 
-Customer precise location is not persisted. 
-A latitude/longitude pair may be sent to a search request and is used only for that query.
+Customer precise location is **not persisted**. A latitude/longitude pair may be sent to a search request and is used only for that query.
 
 ## V1 stack
 
 - Flutter/Dart
-- Node.js/TypeScript
+- Java 17/Spring Boot
 - Express
 - PostgreSQL + PostGIS
 - `pg`
@@ -55,8 +50,8 @@ A latitude/longitude pair may be sent to a search request and is used only for t
 
 - Docker
 - Docker Compose plugin (`docker compose`)
-- Node.js 20+
-- npm
+- Java 17+
+- Maven 3.9+ (or use Docker)
 - Flutter 3.24+ (or a compatible current Flutter SDK)
 - Android Studio or Xcode for mobile builds
 - Google Maps API key for real map rendering
@@ -222,11 +217,20 @@ The MVP applies privacy-by-design principles:
 
 The production launch still requires a legal/privacy review for your exact business model and POPIA obligations.
 
+## Stage delivery rule
 
+Do not implement every stage in one blind change. Finish a stage, run its tests, inspect the diff, and stop for review before moving to the next stage.
+
+See:
+
+- `docs/BUILD_PLAN.md`
+- `docs/PUSH_STAGES.txt`
+- `docs/POPIA.md`
+- `docs/GOOGLE_MAPS.md`
 
 ## Future phases
 
-After phase 1:
+After V1:
 
 - messaging
 - reviews
