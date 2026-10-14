@@ -1,0 +1,9 @@
+<!-- Merge this into the generated Flutter AndroidManifest.xml. Replace YOUR_GOOGLE_MAPS_KEY. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application android:usesCleartextTraffic="true" android:label="Crowned Connections" android:name="${applicationName}" android:icon="@mipmap/ic_launcher">
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="YOUR_GOOGLE_MAPS_KEY"/>
+    </application>
+</manifest>
