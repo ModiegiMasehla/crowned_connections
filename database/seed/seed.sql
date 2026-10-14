@@ -62,7 +62,7 @@ SELECT '00000000-0000-0000-0000-000000000002','10000000-0000-0000-0000-000000000
 WHERE NOT EXISTS(SELECT 1 FROM salon_profiles WHERE name='KZN Hair Lab');
 
 INSERT INTO services(name,description,category,duration_minutes)
-VALUES
+SELECT v.name,v.description,v.category,v.duration_minutes FROM (VALUES
 ('Knotless Braids','Protective knotless braid style','HAIR',180),
 ('Box Braids','Classic box braids','HAIR',180),
 ('Boho Braids','Boho-inspired braids','HAIR',210),
@@ -85,7 +85,8 @@ VALUES
 ('Wig Styling','Wig cut and styling','HAIR',90),
 ('Passion Twist Touch-up','Touch-up service','HAIR',90),
 ('Bridal Trial','Bridal hairstyle trial','HAIR',90)
-ON CONFLICT DO NOTHING;
+) AS v(name,description,category,duration_minutes)
+WHERE NOT EXISTS(SELECT 1 FROM services x WHERE lower(x.name)=lower(v.name) AND x.deleted_at IS NULL);
 
 INSERT INTO hairstyles(name,category)
 SELECT name,category FROM services ON CONFLICT(name) DO NOTHING;
@@ -124,5 +125,3 @@ SELECT s.id,sv.id,
  ELSE 60000 END
 FROM salon_profiles s CROSS JOIN services sv
 ON CONFLICT(salon_id,service_id) DO NOTHING;
-
-INSERT INTO seed_marker(id) VALUES(1) ON CONFLICT(id) DO NOTHING;
