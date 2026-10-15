@@ -6,6 +6,7 @@ import 'salon_screen.dart';
 import 'owner_dashboard.dart';
 import 'map_screen.dart';
 import 'appointments_screen.dart';
+import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,35 +24,50 @@ class _HomeScreenState extends State<HomeScreen>{
   Future<void> loadUser() async {
     try {
       final data=await ApiService.get('/auth/me');
-      role=data['user']['role'];
+      role=data['user']['role'] as String?;
       if(mounted)setState((){});
-    } catch (_) {}
+    } catch (_) {
+      // An expired/invalid token is cleared by ApiService; send the user back to sign in.
+      if(mounted&&ApiService.token==null){
+        Navigator.pushReplacement(context,MaterialPageRoute(builder:(_)=>const LoginScreen()));
+      }
+    }
   }
 
-  Future<void> locate() async{
+  Future<void> logout() async {
+    await ApiService.clearToken();
+    if(mounted)Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder:(_)=>const LoginScreen()),(_)=>false);
+  }
+
+  /// Returns a user-facing note when location is unavailable, or null on success.
+  Future<String?> locate() async{
+    position=null;
     try{
       if(!await Geolocator.isLocationServiceEnabled())throw Exception('Please enable location services or search without location.');
       var permission=await Geolocator.checkPermission();
       if(permission==LocationPermission.denied)permission=await Geolocator.requestPermission();
       if(permission==LocationPermission.denied||permission==LocationPermission.deniedForever)throw Exception('Location permission was not granted. You can still search manually.');
       position=await Geolocator.getCurrentPosition();
-    }catch(e){error=e.toString();}
+      return null;
+    }catch(e){return e.toString().replaceFirst('Exception: ','');}
   }
 
   Future<void> search() async{
     setState(()=>loading=true);
     try{
-      await locate();
+      final locationNote=await locate();
       var path='/search?q=${Uri.encodeQueryComponent(q.text)}&radiusKm=25';
       if(position!=null)path+='&lat=${position!.latitude}&lng=${position!.longitude}';
       final d=await ApiService.get(path);
       salons=(d['results'] as List).map((e)=>Salon.fromJson(e)).toList();
-      error=null;
-    }catch(e){error=e.toString();}
+      error=locationNote;
+    }catch(e){error=e.toString().replaceFirst('Exception: ','');}
     finally{if(mounted)setState(()=>loading=false);}
   }
 
   @override void initState(){super.initState();loadUser();}
+
+  @override void dispose(){q.dispose();super.dispose();}
 
   @override Widget build(BuildContext context)=>Scaffold(
     appBar:AppBar(
@@ -59,7 +75,8 @@ class _HomeScreenState extends State<HomeScreen>{
       actions:[
         if(role=='SALON_OWNER')
           IconButton(onPressed:()=>Navigator.push(context,MaterialPageRoute(builder:(_)=>const OwnerDashboard())),icon:const Icon(Icons.storefront)),
-        IconButton(onPressed:()=>Navigator.push(context,MaterialPageRoute(builder:(_)=>const AppointmentsScreen())),icon:const Icon(Icons.calendar_month))
+        IconButton(onPressed:()=>Navigator.push(context,MaterialPageRoute(builder:(_)=>const AppointmentsScreen())),icon:const Icon(Icons.calendar_month)),
+        IconButton(tooltip:'Sign out',onPressed:logout,icon:const Icon(Icons.logout))
       ],
     ),
     body:Column(children:[
