@@ -18,7 +18,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       appointments = data['appointments'] as List<dynamic>;
       error = null;
     } catch (e) {
-      error = e.toString();
+      error = e.toString().replaceFirst('Exception: ', '');
     } finally {
       if (mounted) setState(() => loading = false);
     }
