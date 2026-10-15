@@ -10,7 +10,7 @@ class _RegisterScreenState extends State<RegisterScreen>{
   final first=TextEditingController(),last=TextEditingController(),email=TextEditingController(),password=TextEditingController();
   String role='CUSTOMER'; bool loading=false; String? error;
   Future<void> register() async{
-    setState(()=>loading=true);
+    setState((){loading=true;error=null;});
     try{
       final d=await ApiService.post('/auth/register',{
         'email':email.text.trim(),'password':password.text,'role':role,
@@ -18,7 +18,7 @@ class _RegisterScreenState extends State<RegisterScreen>{
       });
       await ApiService.saveToken(d['token']);
       if(mounted)Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder:(_)=>const HomeScreen()),(_)=>false);
-    }catch(e){setState(()=>error=e.toString());}finally{if(mounted)setState(()=>loading=false);}
+    }catch(e){if(mounted)setState(()=>error=e.toString().replaceFirst('Exception: ',''));}finally{if(mounted)setState(()=>loading=false);}
   }
   @override Widget build(BuildContext context)=>Scaffold(
     appBar:AppBar(title:const Text('Create account')),
