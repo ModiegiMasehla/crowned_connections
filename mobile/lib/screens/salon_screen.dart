@@ -8,17 +8,24 @@ class SalonScreen extends StatefulWidget{
   @override State<SalonScreen> createState()=>_SalonScreenState();
 }
 class _SalonScreenState extends State<SalonScreen>{
-  Map<String,dynamic>? data; String? selectedService; String? selectedStylist; List<dynamic> slots=[]; bool loading=true;
+  Map<String,dynamic>? data; String? loadError; String? selectedService; String? selectedStylist; List<dynamic> slots=[]; bool loading=true;
   DateTime date=DateTime.now().add(const Duration(days:1));
 
   Future<void> load()async{
-    try{data=await ApiService.get('/salons/${widget.salonId}');}catch(e){}
+    try{data=await ApiService.get('/salons/${widget.salonId}');}catch(e){loadError=e.toString().replaceFirst('Exception: ','');}
     if(mounted)setState(()=>loading=false);
   }
   Future<void> availability()async{
     if(selectedService==null)return;
-    final d=await ApiService.get('/availability?salonId=${widget.salonId}&serviceId=$selectedService&date=${DateFormat('yyyy-MM-dd').format(date)}${selectedStylist==null?'':'&stylistId=$selectedStylist'}');
-    setState(()=>slots=d['slots'] as List);
+    try{
+      final d=await ApiService.get('/availability?salonId=${widget.salonId}&serviceId=$selectedService&date=${DateFormat('yyyy-MM-dd').format(date)}${selectedStylist==null?'':'&stylistId=$selectedStylist'}');
+      if(mounted)setState(()=>slots=d['slots'] as List);
+    }catch(e){
+      if(mounted){
+        setState(()=>slots=[]);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(e.toString().replaceFirst('Exception: ',''))));
+      }
+    }
   }
   Future<void> book(Map slot)async{
     try{
@@ -26,11 +33,13 @@ class _SalonScreenState extends State<SalonScreen>{
         'salonId':widget.salonId,'serviceId':selectedService,'stylistId':slot['stylistId'],'startTime':slot['startTime']
       });
       if(mounted)showDialog(context:context,builder:(_)=>AlertDialog(title:const Text('Booking requested'),content:Text('Status: ${r['appointment']['status']}. The salon owner must accept it.'),actions:[TextButton(onPressed:()=>Navigator.pop(context),child:const Text('OK'))]));
-    }catch(e){if(mounted)ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(e.toString())));}
+      await availability();
+    }catch(e){if(mounted)ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(e.toString().replaceFirst('Exception: ',''))));}
   }
   @override void initState(){super.initState();load();}
   @override Widget build(BuildContext context){
     if(loading)return const Scaffold(body:Center(child:CircularProgressIndicator()));
+    if(data==null)return Scaffold(appBar:AppBar(title:const Text('Salon')),body:Center(child:Padding(padding:const EdgeInsets.all(24),child:Text(loadError??'Could not load this salon.',style:const TextStyle(color:Colors.red)))));
     final salon=data?['salon']; final services=data?['services'] as List? ?? []; final staff=data?['staff'] as List? ?? [];
     return Scaffold(appBar:AppBar(title:Text(salon?['name']??'Salon')),body:ListView(padding:const EdgeInsets.all(16),children:[
       Text(salon?['description']??'',style:Theme.of(context).textTheme.bodyLarge),
