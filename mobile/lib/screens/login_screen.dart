@@ -8,18 +8,18 @@ class LoginScreen extends StatefulWidget {
   @override State<LoginScreen> createState() => _LoginScreenState();
 }
 class _LoginScreenState extends State<LoginScreen> {
-  final email=TextEditingController(text:'customer@example.com');
-  final password=TextEditingController(text:'Password123!');
+  final email=TextEditingController();
+  final password=TextEditingController();
   bool loading=false;
   String? error;
 
   Future<void> login() async {
-    setState(()=>loading=true);
+    setState((){loading=true;error=null;});
     try {
       final data=await ApiService.post('/auth/login',{'email':email.text.trim(),'password':password.text});
       await ApiService.saveToken(data['token']);
       if(mounted) Navigator.pushReplacement(context,MaterialPageRoute(builder:(_)=>const HomeScreen()));
-    } catch(e){ setState(()=>error=e.toString()); }
+    } catch(e){ if(mounted) setState(()=>error=e.toString().replaceFirst('Exception: ','')); }
     finally { if(mounted)setState(()=>loading=false); }
   }
 
