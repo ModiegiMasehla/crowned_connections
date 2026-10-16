@@ -1,0 +1,79 @@
+# Crowned Connections: production-style stack. Use this file on its own:
+#
+#   cp .env.prod.example .env.prod      # then fill in real secrets
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build --wait
+#
+# Differences from docker-compose.yml:
+#   - no seed data (the development accounts and salons are never loaded)
+#   - no default passwords or JWT secret: it refuses to start without them
+#   - the database port is not published at all
+#   - the API container is read-only, drops all Linux capabilities, and has
+#     memory and process limits
+#   - logs rotate, and containers restart automatically
+#
+# Put a TLS-terminating reverse proxy (Caddy, nginx, a cloud load balancer) in
+# front of the API. The mobile app should call it over https.
+
+name: crowned-connections-prod
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-crowned_connections}
+      POSTGRES_USER: ${POSTGRES_USER:-crowned}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.prod}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Schema only. Runs once, when the data volume is first created.
+      - ./database/migrations/001_schema.sql:/docker-entrypoint-initdb.d/001_schema.sql:ro
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+    security_opt:
+      - no-new-privileges:true
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  api:
+    build:
+      context: ./backend
+      target: runtime
+    image: ${API_IMAGE:-crowned-connections-api:1.0.0}
+    restart: always
+    environment:
+      PORT: 5000
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-crowned_connections}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-crowned}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.prod}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env.prod (at least 32 characters)}
+    ports:
+      - "${API_PORT:-5000}:5000"
+    networks: [backend]
+    depends_on:
+      db:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 768m
+    pids_limit: 256
+    logging: *logging
+
+networks:
+  backend:
+
+volumes:
+  pgdata:
