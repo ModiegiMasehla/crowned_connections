@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/api_service.dart';
+import '../services/salon_time.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({super.key});
-  @override State<AppointmentsScreen> createState() => _AppointmentsScreenState();
+  @override
+  State<AppointmentsScreen> createState() => _AppointmentsScreenState();
 }
 
 class _AppointmentsScreenState extends State<AppointmentsScreen> {
@@ -39,23 +41,27 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           : RefreshIndicator(
               onRefresh: load,
               child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
                 children: [
-                  if (error != null) Text(error!, style: const TextStyle(color: Colors.red)),
+                  if (error != null)
+                    Text(error!, style: const TextStyle(color: Colors.red)),
                   if (appointments.isEmpty)
                     const Padding(
                       padding: EdgeInsets.all(30),
-                      child: Center(child: Text('You have no appointments yet.')),
+                      child:
+                          Center(child: Text('You have no appointments yet.')),
                     ),
                   ...appointments.map((a) {
-                    final date = DateTime.tryParse(a['start_time'].toString())?.toLocal();
+                    final date = DateTime.tryParse(a['start_time'].toString());
                     return Card(
                       child: ListTile(
-                        leading: const CircleAvatar(child: Icon(Icons.calendar_month)),
+                        leading: const CircleAvatar(
+                            child: Icon(Icons.calendar_month)),
                         title: Text(a['service_name'] ?? 'Appointment'),
                         subtitle: Text(
                           '${a['salon_name']}\n'
-                          '${date == null ? a['start_time'] : DateFormat('EEE, d MMM yyyy • HH:mm').format(date)}\n'
+                          '${date == null ? a['start_time'] : DateFormat('EEE, d MMM yyyy • HH:mm').format(salonTime(date))}\n'
                           'Status: ${a['status']}',
                         ),
                         isThreeLine: true,
