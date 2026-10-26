@@ -30,9 +30,10 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
           '/appointments/$id/decision', {'decision': decision});
       await load();
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(e.toString().replaceFirst('Exception: ', ''))));
+      }
     }
   }
 

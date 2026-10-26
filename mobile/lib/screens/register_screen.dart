@@ -30,14 +30,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'lastName': last.text.trim()
       });
       await ApiService.saveToken(d['token']);
-      if (mounted)
+      if (mounted) {
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => const HomeScreen()),
                 (_) => false);
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() => error = e.toString().replaceFirst('Exception: ', ''));
+      }
     } finally {
       if (mounted) setState(() => loading = false);
     }

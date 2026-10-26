@@ -38,25 +38,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> logout() async {
     await ApiService.clearToken();
-    if (mounted)
+    if (mounted) {
       Navigator.pushAndRemoveUntil(context,
           MaterialPageRoute(builder: (_) => const LoginScreen()), (_) => false);
+    }
   }
 
   /// Returns a user-facing note when location is unavailable, or null on success.
   Future<String?> locate() async {
     position = null;
     try {
-      if (!await Geolocator.isLocationServiceEnabled())
+      if (!await Geolocator.isLocationServiceEnabled()) {
         throw Exception(
             'Please enable location services or search without location.');
+      }
       var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied)
+      if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
+      }
       if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever)
+          permission == LocationPermission.deniedForever) {
         throw Exception(
             'Location permission was not granted. You can still search manually.');
+      }
       position = await Geolocator.getCurrentPosition()
           .timeout(const Duration(seconds: 20));
       return null;
@@ -72,8 +76,9 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final locationNote = await locate();
       var path = '/search?q=${Uri.encodeQueryComponent(term)}&radiusKm=25';
-      if (position != null)
+      if (position != null) {
         path += '&lat=${position!.latitude}&lng=${position!.longitude}';
+      }
       final d = await ApiService.get(path);
       salons = (d['results'] as List).map((e) => Salon.fromJson(e)).toList();
       error = locationNote;
