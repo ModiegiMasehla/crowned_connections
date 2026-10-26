@@ -24,12 +24,14 @@ class _LoginScreenState extends State<LoginScreen> {
       final data = await ApiService.post('/auth/login',
           {'email': email.text.trim(), 'password': password.text});
       await ApiService.saveToken(data['token']);
-      if (mounted)
+      if (mounted) {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() => error = e.toString().replaceFirst('Exception: ', ''));
+      }
     } finally {
       if (mounted) setState(() => loading = false);
     }

@@ -37,8 +37,9 @@ class _SalonScreenState extends State<SalonScreen> {
     try {
       final d = await ApiService.get(
           '/availability?salonId=${widget.salonId}&serviceId=$selectedService&date=${DateFormat('yyyy-MM-dd').format(date)}${selectedStylist == null ? '' : '&stylistId=$selectedStylist'}');
-      if (mounted && request == availabilityRequest)
+      if (mounted && request == availabilityRequest) {
         setState(() => slots = d['slots'] as List);
+      }
     } catch (e) {
       if (mounted && request == availabilityRequest) {
         setState(() => slots = []);
@@ -58,7 +59,7 @@ class _SalonScreenState extends State<SalonScreen> {
         'stylistId': slot['stylistId'],
         'startTime': slot['startTime']
       });
-      if (mounted)
+      if (mounted) {
         showDialog(
             context: context,
             builder: (_) => AlertDialog(
@@ -70,11 +71,13 @@ class _SalonScreenState extends State<SalonScreen> {
                       onPressed: () => Navigator.pop(context),
                       child: const Text('OK'))
                 ]));
+      }
       await availability();
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(e.toString().replaceFirst('Exception: ', ''))));
+      }
     } finally {
       if (mounted) setState(() => booking = false);
     }
@@ -88,9 +91,10 @@ class _SalonScreenState extends State<SalonScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (loading)
+    if (loading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    if (data == null)
+    }
+    if (data == null) {
       return Scaffold(
           appBar: AppBar(title: const Text('Salon')),
           body: Center(
@@ -98,6 +102,7 @@ class _SalonScreenState extends State<SalonScreen> {
                   padding: const EdgeInsets.all(24),
                   child: Text(loadError ?? 'Could not load this salon.',
                       style: const TextStyle(color: Colors.red)))));
+    }
     final salon = data?['salon'];
     final services = data?['services'] as List? ?? [];
     final staff = data?['staff'] as List? ?? [];
